@@ -45,6 +45,7 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   double lastSpawnX = 0.0;
   double lastGapCenter = 0.0;
   static const double pipeSpacing = 350.0; // Distance between each pipe pair
+  static const double virtualHeight = 844.0;
 
   // Skin & Theme inventory variables
   String selectedSkinId = 'default';
@@ -188,7 +189,7 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     final firstPipe = PipePair(
       x: lastSpawnX,
       prevGapCenter: lastGapCenter,
-      screenHeight: size.y,
+      screenHeight: virtualHeight,
       isGolden: isGolden,
     );
     world.add(firstPipe);
@@ -243,6 +244,13 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   }
 
   @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    // Ensure the game height in world coordinates is always 844
+    camera.viewfinder.zoom = size.y / virtualHeight;
+  }
+
+  @override
   void update(double dt) {
     super.update(dt);
 
@@ -263,7 +271,8 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
       // We calculate the right edge of the screen in world coordinates.
       // If the camera is getting close to the last spawned pipe, spawn another one.
       final cameraX = camera.viewfinder.position.x;
-      final rightEdge = cameraX + size.x / 2;
+      final visibleWidth = size.x / camera.viewfinder.zoom;
+      final rightEdge = cameraX + visibleWidth / 2;
 
       // Spawn buffer: 200 pixels before the pipe actually enters the viewport from the right
       if (rightEdge + 200 > lastSpawnX) {
@@ -276,7 +285,7 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
         final newPipe = PipePair(
           x: lastSpawnX,
           prevGapCenter: lastGapCenter,
-          screenHeight: size.y,
+          screenHeight: virtualHeight,
           isGolden: isGolden,
         );
         world.add(newPipe);
@@ -284,8 +293,8 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
       }
 
       // Check vertical boundaries (screen bounds in world coordinates)
-      final topLimit = -size.y / 2;
-      final bottomLimit = size.y / 2;
+      final topLimit = -virtualHeight / 2;
+      final bottomLimit = virtualHeight / 2;
 
       // Add small buffer so the bird fully exits the view before triggering Game Over
       if (bird.position.y < topLimit - bird.size.y || 

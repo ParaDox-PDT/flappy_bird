@@ -91,9 +91,9 @@ class PipePair extends PositionComponent with HasGameReference<FlappyBirdGame> {
 
     // Automatically remove from the game loop once the pipe pair moves off the left side of the screen
     final cameraX = game.camera.viewfinder.position.x;
-    final screenWidth = game.size.x;
+    final visibleWidth = game.size.x / game.camera.viewfinder.zoom;
 
-    if (position.x < cameraX - screenWidth / 2 - 100) {
+    if (position.x < cameraX - visibleWidth / 2 - 100) {
       removeFromParent();
     }
   }
