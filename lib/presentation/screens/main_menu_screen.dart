@@ -221,28 +221,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 60),
-                    // Footer Engine Attribution
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.flash_on,
-                          color: Colors.amber.withAlpha(153),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'POWERED BY FLAME ENGINE',
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.5,
-                            color: Colors.white.withAlpha(128),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
