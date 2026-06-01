@@ -15,7 +15,6 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
     super.onLoad();
 
     // Instantiate and add the bird to the game world.
-    // In Flame 1.x, components placed inside 'world' are viewed by the camera.
     bird = Bird();
     world.add(bird);
 
@@ -23,10 +22,13 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
     pauseEngine();
   }
 
-  /// Starts the gameplay session
+  /// Starts or restarts the gameplay session
   void startGame() {
     gameState.value = GameState.playing;
+    
+    // Clear menu and game over overlays
     overlays.remove('MainMenu');
+    overlays.remove('GameOver');
 
     // Reset bird physics state
     bird.reset();
@@ -42,13 +44,14 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
   void gameOver() {
     gameState.value = GameState.gameOver;
     bird.isDead = true;
+    overlays.add('GameOver');
     pauseEngine();
-    // overlays.add('GameOver'); // Will be added later
   }
 
   /// Returns back to main menu
   void resetGame() {
     gameState.value = GameState.menu;
+    overlays.remove('GameOver');
     overlays.add('MainMenu');
     bird.reset();
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
@@ -70,9 +73,20 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
 
     if (gameState.value == GameState.playing) {
       // Camera viewfinder follows bird's X position with a fixed offset (+120)
-      // This keeps the bird positioned on the left side of the screen.
-      // Locking Y to 0 allows the bird to move vertically within the camera's viewport.
       camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
+
+      // Check vertical boundaries (screen bounds in world coordinates)
+      // Since camera viewfinder position Y is locked at 0, the visible vertical
+      // range in the world coordinate space is [-size.y / 2, size.y / 2].
+      // We check if the bird flies too high or falls below the bottom edge.
+      final topLimit = -size.y / 2;
+      final bottomLimit = size.y / 2;
+
+      // Add small buffer so the bird fully exits the view before triggering Game Over
+      if (bird.position.y < topLimit - bird.size.y || 
+          bird.position.y > bottomLimit + bird.size.y) {
+        gameOver();
+      }
     }
   }
 }

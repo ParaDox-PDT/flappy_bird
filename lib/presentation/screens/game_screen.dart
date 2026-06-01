@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../../game/flappy_bird_game.dart';
 import '../overlays/main_menu_overlay.dart';
+import '../overlays/game_over_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -27,7 +28,7 @@ class _GameScreenState extends State<GameScreen> {
         game: _game,
         overlayBuilderMap: {
           'MainMenu': (context, game) => MainMenuOverlay(game: game),
-          // Additional overlays (e.g. GameOver, Hud) will be mapped here
+          'GameOver': (context, game) => GameOverOverlay(game: game),
         },
         // MainMenu starts as visible on loading the game screen
         initialActiveOverlays: const ['MainMenu'],
