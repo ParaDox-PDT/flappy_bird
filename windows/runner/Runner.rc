@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.paradox.voicedox" "\0"
-            VALUE "FileDescription", "flappy_bird" "\0"
+            VALUE "FileDescription", "Sky Bird" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "flappy_bird" "\0"
+            VALUE "InternalName", "sky_bird" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.paradox.voicedox. All rights reserved." "\0"
-            VALUE "OriginalFilename", "flappy_bird.exe" "\0"
-            VALUE "ProductName", "flappy_bird" "\0"
+            VALUE "OriginalFilename", "sky_bird.exe" "\0"
+            VALUE "ProductName", "Sky Bird" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
