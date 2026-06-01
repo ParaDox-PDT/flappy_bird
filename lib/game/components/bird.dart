@@ -14,7 +14,7 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
   bool isDead = false;
 
   Bird() : super(
-    size: Vector2(52, 42), // Slightly larger bounding box for beautiful geometry details
+    size: Vector2(52, 42), // Bounding box for Dash mascot
     anchor: Anchor.center,
   );
 
@@ -79,71 +79,66 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
     final w = size.x;
     final h = size.y;
 
-    // 1. Shaders & Gradients configuration based on dynamic component size
+    // Retrieve active skin configuration from the game controller
+    final skin = game.selectedSkin;
+    final colors = skin.colors;
+    final isSpecial = skin.isSpecial;
+
+    // Map customization colors
+    final bodyPrimary = colors[0];
+    final bodySecondary = colors[1];
+    final bellyPrimary = colors[2];
+    final bellySecondary = colors[3];
+    final wingPrimary = colors[4];
+    final wingSecondary = colors[5];
+
+    // Shaders & Gradients configuration based on dynamic skin colors
     final backWingShader = LinearGradient(
-      colors: [
-        const Color(0xFF0D47A1), // Very dark blue
-        const Color(0xFF01579B), // Medium dark blue
-      ],
+      colors: [bodyPrimary, wingSecondary],
       begin: Alignment.bottomRight,
       end: Alignment.topLeft,
     ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     final tailShader = LinearGradient(
-      colors: [
-        const Color(0xFF01579B),
-        const Color(0xFF0288D1), // Sky blue
-      ],
+      colors: [bodyPrimary, wingPrimary],
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
     ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     final bodyShader = LinearGradient(
-      colors: [
-        const Color(0xFF02569B), // Flutter Primary Blue
-        const Color(0xFF0175C2), // Flutter Secondary Blue
-      ],
+      colors: [bodyPrimary, bodySecondary],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     final bellyShader = LinearGradient(
-      colors: [
-        const Color(0xFF00E5FF), // Bright Cyan / Turquoise
-        const Color(0xFF00B0FF), // Light Sky Blue
-      ],
+      colors: [bellyPrimary, bellySecondary],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     final frontWingShader1 = LinearGradient(
-      colors: [
-        const Color(0xFF80DEEA), // Light pastel cyan
-        const Color(0xFF00ACC1), // Deep turquoise
-      ],
+      colors: [wingPrimary, wingSecondary],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     final frontWingShader2 = LinearGradient(
-      colors: [
-        const Color(0xFF00B0FF),
-        const Color(0xFF01579B),
-      ],
+      colors: [bodySecondary, wingPrimary],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     final beakShader = LinearGradient(
       colors: [
-        const Color(0xFFFFD54F), // Amber
-        const Color(0xFFFF8F00), // Dark Amber / Orange
+        const Color(0xFFFFD54F), // Bright Yellow
+        const Color(0xFFFF8F00), // Orange
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ).createShader(Rect.fromLTWH(w * 0.75, h * 0.35, w * 0.4, h * 0.2));
 
-    // 2. Render Back Wing (placed behind body)
+    // 1. Render Back Wing (placed behind body)
     final backWingPaint = Paint()..shader = backWingShader;
     final backWingPath = Path()
       ..moveTo(w * 0.32, h * 0.35)
@@ -153,17 +148,17 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(backWingPath, backWingPaint);
 
-    // 3. Render Tail (placed behind body)
+    // 2. Render Tail (placed behind body)
     final tailPaint = Paint()..shader = tailShader;
     final tailPath = Path()
       ..moveTo(w * 0.15, h * 0.5)
-      ..lineTo(w * -0.15, h * 0.58) // Extend tail slightly backward
+      ..lineTo(w * -0.15, h * 0.58)
       ..lineTo(w * -0.08, h * 0.72)
       ..lineTo(w * 0.25, h * 0.62)
       ..close();
     canvas.drawPath(tailPath, tailPaint);
 
-    // 4. Render Main Body (Geometric Blue Core)
+    // 3. Render Main Body (Geometric Core)
     final bodyPaint = Paint()..shader = bodyShader;
     final bodyPath = Path()
       ..moveTo(w * 0.15, h * 0.5)
@@ -177,7 +172,7 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(bodyPath, bodyPaint);
 
-    // 5. Render Belly and Chest (Geometric Turquoise/Cyan accent)
+    // 4. Render Belly and Chest (Geometric Accent)
     final bellyPaint = Paint()..shader = bellyShader;
     final bellyPath = Path()
       ..moveTo(w * 0.62, h * 0.55)
@@ -189,7 +184,7 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(bellyPath, bellyPaint);
 
-    // 6. Render Beak (hummingbird sharp orange style)
+    // 5. Render Beak (long hummingbird-style beak)
     final beakPaint = Paint()..shader = beakShader;
     final beakPath = Path()
       ..moveTo(w * 0.76, h * 0.36)
@@ -198,8 +193,8 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(beakPath, beakPaint);
 
-    // 7. Render Front Wing Layers (Geometric origami folded layers)
-    // Wing Layer 1 (Darker Cyan Base)
+    // 6. Render Front Wing Layers (Geometric origami folded layers)
+    // Wing Layer 1 (Darker Base)
     final frontWingPaint1 = Paint()..shader = frontWingShader2;
     final frontWingPath1 = Path()
       ..moveTo(w * 0.35, h * 0.45)
@@ -209,7 +204,7 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(frontWingPath1, frontWingPaint1);
 
-    // Wing Layer 2 (Lighter Turquoise highlights)
+    // Wing Layer 2 (Lighter highlights)
     final frontWingPaint2 = Paint()..shader = frontWingShader1;
     final frontWingPath2 = Path()
       ..moveTo(w * 0.42, h * 0.42)
@@ -220,7 +215,7 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
     canvas.drawPath(frontWingPath2, frontWingPaint2);
 
     // Wing Highlight Facet (Small origami fold)
-    final wingHighlightPaint = Paint()..color = const Color(0xFFE0F7FA).withAlpha(180);
+    final wingHighlightPaint = Paint()..color = bellyPrimary.withAlpha(120);
     final wingHighlightPath = Path()
       ..moveTo(w * 0.48, h * 0.38)
       ..lineTo(w * 0.34, h * 0.12)
@@ -229,7 +224,7 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(wingHighlightPath, wingHighlightPaint);
 
-    // 8. Render Big Eye (Dash-style friendly circular eye)
+    // 7. Render Big Eye (Dash-style friendly circular eye)
     final eyeWhitePaint = Paint()..color = Colors.white;
     final eyeCenter = Offset(w * 0.65, h * 0.33);
     final eyeRadius = h * 0.13;
@@ -246,5 +241,24 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
     final reflectionCenter = Offset(w * 0.69, h * 0.31);
     final reflectionRadius = h * 0.025;
     canvas.drawCircle(reflectionCenter, reflectionRadius, eyeReflectionPaint);
+
+    // 8. Render Special Headwear (tiny royal golden crown for special skins)
+    if (isSpecial) {
+      final crownPaint = Paint()..color = const Color(0xFFFFD700);
+      final crownPath = Path()
+        ..moveTo(w * 0.50, h * 0.22) // Left base
+        ..lineTo(w * 0.44, h * 0.08) // Left peak
+        ..lineTo(w * 0.54, h * 0.14) // Left valley
+        ..lineTo(w * 0.60, h * 0.04) // Center peak
+        ..lineTo(w * 0.66, h * 0.14) // Right valley
+        ..lineTo(w * 0.76, h * 0.08) // Right peak
+        ..lineTo(w * 0.70, h * 0.22) // Right base
+        ..close();
+      canvas.drawPath(crownPath, crownPaint);
+
+      // Ruby gemstone on center crown peak
+      final gemPaint = Paint()..color = const Color(0xFFFF1744);
+      canvas.drawCircle(Offset(w * 0.60, h * 0.04), h * 0.04, gemPaint);
+    }
   }
 }

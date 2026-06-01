@@ -2,6 +2,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../domain/models/game_state.dart';
+import '../domain/models/bird_skin.dart';
 import '../data/datasources/local_storage.dart';
 import 'components/bird.dart';
 import 'components/pipe_pair.dart';
@@ -23,12 +24,36 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   double lastGapCenter = 0.0;
   static const double pipeSpacing = 350.0; // Distance between each pipe pair
 
+  // Skin inventory variables
+  String selectedSkinId = 'default';
+
+  /// Resolves the currently active skin object
+  BirdSkin get selectedSkin => BirdSkin.allSkins.firstWhere(
+        (s) => s.id == selectedSkinId,
+        orElse: () => BirdSkin.allSkins.first,
+      );
+
+  /// Returns the list of all skins currently unlocked by the player's high score
+  List<BirdSkin> getUnlockedSkins() {
+    return BirdSkin.allSkins.where((s) => highScore >= s.unlockScore).toList();
+  }
+
+  /// Sets and persists a new skin selection if it has been unlocked
+  Future<void> changeSkin(String skinId) async {
+    final skin = BirdSkin.allSkins.firstWhere((s) => s.id == skinId, orElse: () => BirdSkin.allSkins.first);
+    if (highScore >= skin.unlockScore) {
+      selectedSkinId = skinId;
+      await _localStorage.saveSelectedSkinId(skinId);
+    }
+  }
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
 
-    // Load persisted high score from shared_preferences
+    // Load persisted high score and skin selection from shared_preferences
     highScore = await _localStorage.getHighScore();
+    selectedSkinId = await _localStorage.getSelectedSkinId();
 
     // Instantiate and add the bird to the game world.
     bird = Bird();
