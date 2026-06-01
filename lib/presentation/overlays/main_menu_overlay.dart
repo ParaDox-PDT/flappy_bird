@@ -117,6 +117,52 @@ class MainMenuOverlay extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  // Skins / Inventory Button
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.white30, width: 1.5),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: Material(
+                          color: Colors.white12,
+                          child: InkWell(
+                            onTap: () {
+                              game.overlays.remove('MainMenu');
+                              game.overlays.add('Inventory');
+                            },
+                            splashColor: Colors.white.withAlpha(50),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 48,
+                                vertical: 14,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.style_outlined, color: Colors.white, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'SKINS',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.5,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 60),
                   // Footer Engine Attribution
                   Row(
