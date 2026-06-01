@@ -3,12 +3,17 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../domain/models/game_state.dart';
 import 'components/bird.dart';
+import 'components/pipe_pair.dart';
 
-class FlappyBirdGame extends FlameGame with TapCallbacks {
+class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   // ValueNotifier allows Flutter widgets to easily listen to state changes
   final ValueNotifier<GameState> gameState = ValueNotifier<GameState>(GameState.menu);
 
   late final Bird bird;
+
+  // Spawner tracking variables
+  double lastSpawnX = 0.0;
+  static const double pipeSpacing = 280.0; // Distance between each pipe pair
 
   @override
   Future<void> onLoad() async {
@@ -30,11 +35,18 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
     overlays.remove('MainMenu');
     overlays.remove('GameOver');
 
+    // Remove any pipes remaining from the previous run
+    world.children.whereType<PipePair>().forEach((p) => p.removeFromParent());
+
     // Reset bird physics state
     bird.reset();
 
     // Center camera's viewport horizontally with an offset so the bird is on the left
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
+
+    // Set initial spawning X coordinate (placed ahead of the bird)
+    lastSpawnX = bird.position.x + 400.0;
+    world.add(PipePair(x: lastSpawnX));
 
     // Resume the game loop
     resumeEngine();
@@ -53,6 +65,9 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
     gameState.value = GameState.menu;
     overlays.remove('GameOver');
     overlays.add('MainMenu');
+    
+    // Clean up active obstacles
+    world.children.whereType<PipePair>().forEach((p) => p.removeFromParent());
     bird.reset();
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
     pauseEngine();
@@ -75,10 +90,19 @@ class FlappyBirdGame extends FlameGame with TapCallbacks {
       // Camera viewfinder follows bird's X position with a fixed offset (+120)
       camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
 
+      // Procedural Obstacle Spawning
+      // We calculate the right edge of the screen in world coordinates.
+      // If the camera is getting close to the last spawned pipe, spawn another one.
+      final cameraX = camera.viewfinder.position.x;
+      final rightEdge = cameraX + size.x / 2;
+
+      // Spawn buffer: 200 pixels before the pipe actually enters the viewport from the right
+      if (rightEdge + 200 > lastSpawnX) {
+        lastSpawnX += pipeSpacing;
+        world.add(PipePair(x: lastSpawnX));
+      }
+
       // Check vertical boundaries (screen bounds in world coordinates)
-      // Since camera viewfinder position Y is locked at 0, the visible vertical
-      // range in the world coordinate space is [-size.y / 2, size.y / 2].
-      // We check if the bird flies too high or falls below the bottom edge.
       final topLimit = -size.y / 2;
       final bottomLimit = size.y / 2;
 

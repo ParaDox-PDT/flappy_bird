@@ -1,7 +1,10 @@
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import '../flappy_bird_game.dart';
+import 'pipe.dart';
 
-class Bird extends PositionComponent {
+class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<FlappyBirdGame> {
   // Physics constants
   static const double gravity = 900.0;
   static const double jumpVelocity = -320.0;
@@ -14,6 +17,13 @@ class Bird extends PositionComponent {
     size: Vector2(46, 36),
     anchor: Anchor.center,
   );
+
+  @override
+  Future<void> onLoad() async {
+    super.onLoad();
+    // Add collision detection hitbox
+    add(RectangleHitbox());
+  }
 
   @override
   void onMount() {
@@ -51,6 +61,15 @@ class Bird extends PositionComponent {
   void jump() {
     if (isDead) return;
     velocityY = jumpVelocity;
+  }
+
+  @override
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+    // If the bird hits a pipe, trigger Game Over
+    if (other is Pipe) {
+      game.gameOver();
+    }
   }
 
   @override
