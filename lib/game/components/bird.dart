@@ -214,8 +214,12 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
       ..close();
     canvas.drawPath(frontWingPath2, frontWingPaint2);
 
-    // Wing Highlight Facet (Small origami fold)
-    final wingHighlightPaint = Paint()..color = bellyPrimary.withAlpha(120);
+    // Wing Highlight Facet (Small origami fold with extra shine for special skins)
+    final wingHighlightPaint = Paint()
+      ..color = isSpecial
+          ? const Color(0xFFFFFFFF).withAlpha(190) // Extra bright white shine
+          : bellyPrimary.withAlpha(120); // standard theme color highlight
+
     final wingHighlightPath = Path()
       ..moveTo(w * 0.48, h * 0.38)
       ..lineTo(w * 0.34, h * 0.12)
@@ -230,17 +234,43 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
     final eyeRadius = h * 0.13;
     canvas.drawCircle(eyeCenter, eyeRadius, eyeWhitePaint);
 
+    // Glowing Aura around the eye for Special Skins
+    if (isSpecial) {
+      final glowPaint = Paint()
+        ..color = const Color(0xFFFFD700).withAlpha(140) // Golden glow
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+      canvas.drawCircle(eyeCenter, eyeRadius + 1.5, glowPaint);
+    }
+
     // Pupil
     final eyePupilPaint = Paint()..color = Colors.black;
     final pupilCenter = Offset(w * 0.67, h * 0.33);
     final pupilRadius = h * 0.07;
     canvas.drawCircle(pupilCenter, pupilRadius, eyePupilPaint);
 
-    // Reflection Dot
-    final eyeReflectionPaint = Paint()..color = Colors.white;
-    final reflectionCenter = Offset(w * 0.69, h * 0.31);
-    final reflectionRadius = h * 0.025;
-    canvas.drawCircle(reflectionCenter, reflectionRadius, eyeReflectionPaint);
+    // Reflection Dot or Sparkling Star for Special Skins
+    if (isSpecial) {
+      // Draw cross/star reflection in pupil
+      final starPaint = Paint()..color = Colors.white;
+      final starPath = Path()
+        ..moveTo(pupilCenter.dx, pupilCenter.dy - 3)
+        ..lineTo(pupilCenter.dx + 0.8, pupilCenter.dy - 0.8)
+        ..lineTo(pupilCenter.dx + 3, pupilCenter.dy)
+        ..lineTo(pupilCenter.dx + 0.8, pupilCenter.dy + 0.8)
+        ..lineTo(pupilCenter.dx, pupilCenter.dy + 3)
+        ..lineTo(pupilCenter.dx - 0.8, pupilCenter.dy + 0.8)
+        ..lineTo(pupilCenter.dx - 3, pupilCenter.dy)
+        ..lineTo(pupilCenter.dx - 0.8, pupilCenter.dy - 0.8)
+        ..close();
+      canvas.drawPath(starPath, starPaint);
+    } else {
+      // Normal reflection dot
+      final eyeReflectionPaint = Paint()..color = Colors.white;
+      final reflectionCenter = Offset(w * 0.69, h * 0.31);
+      final reflectionRadius = h * 0.025;
+      canvas.drawCircle(reflectionCenter, reflectionRadius, eyeReflectionPaint);
+    }
 
     // 8. Render Special Headwear (tiny royal golden crown for special skins)
     if (isSpecial) {
