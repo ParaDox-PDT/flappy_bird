@@ -143,19 +143,21 @@ class GameOverOverlay extends StatelessWidget {
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: Container(
+                      width: 250,
+                      height: 56,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(28),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.redAccent.withAlpha(76),
                             blurRadius: 20,
                             spreadRadius: 2,
                             offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(28),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -173,15 +175,11 @@ class GameOverOverlay extends StatelessWidget {
                                   end: Alignment.bottomRight,
                                 ),
                               ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 56,
-                                  vertical: 18,
-                                ),
+                              child: Center(
                                 child: Text(
                                   'RESTART',
                                   style: GoogleFonts.outfit(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 2.0,
                                     color: Colors.white,
@@ -199,23 +197,21 @@ class GameOverOverlay extends StatelessWidget {
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: Container(
+                      width: 250,
+                      height: 56,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(28),
                         border: Border.all(color: Colors.white30, width: 1.5),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(28),
                         child: Material(
                           color: Colors.white12,
                           child: InkWell(
                             onTap: () {
                               Navigator.of(context).pop();
                             },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 48,
-                                vertical: 14,
-                              ),
+                            child: Center(
                               child: Text(
                                 'MAIN MENU',
                                 style: GoogleFonts.outfit(

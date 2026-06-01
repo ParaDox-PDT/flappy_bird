@@ -121,8 +121,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                     MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: Container(
+                        width: 250,
+                        height: 56,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.cyanAccent.withAlpha(76),
@@ -133,7 +135,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(28),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -156,15 +158,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                     end: Alignment.bottomRight,
                                   ),
                                 ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 56,
-                                    vertical: 18,
-                                  ),
+                                child: Center(
                                   child: Text(
                                     'PLAY NOW',
                                     style: GoogleFonts.outfit(
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 2.0,
                                       color: Colors.white,
@@ -182,12 +180,14 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                     MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: Container(
+                        width: 250,
+                        height: 56,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(28),
                           border: Border.all(color: Colors.white30, width: 1.5),
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(28),
                           child: Material(
                             color: Colors.white12,
                             child: InkWell(
@@ -198,11 +198,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                 _loadData(); // Reload theme in case they changed it
                               },
                               splashColor: Colors.white.withAlpha(50),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 48,
-                                  vertical: 14,
-                                ),
+                              child: Center(
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
