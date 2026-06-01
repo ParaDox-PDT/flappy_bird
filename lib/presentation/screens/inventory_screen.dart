@@ -1,37 +1,44 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../game/flappy_bird_game.dart';
+import '../../data/datasources/local_storage.dart';
 import '../../domain/models/bird_skin.dart';
 import '../../domain/models/game_theme.dart';
 
-class InventoryOverlay extends StatefulWidget {
-  final FlappyBirdGame game;
-
-  const InventoryOverlay({
-    super.key,
-    required this.game,
-  });
+class InventoryScreen extends StatefulWidget {
+  const InventoryScreen({super.key});
 
   @override
-  State<InventoryOverlay> createState() => _InventoryOverlayState();
+  State<InventoryScreen> createState() => _InventoryScreenState();
 }
 
-class _InventoryOverlayState extends State<InventoryOverlay> {
+class _InventoryScreenState extends State<InventoryScreen> {
+  final LocalStorage _localStorage = LocalStorage();
   late String _currentSelectedId;
   late String _currentThemeId;
+  int _highScore = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _currentSelectedId = widget.game.selectedSkinId;
-    _currentThemeId = widget.game.selectedThemeId;
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final score = await _localStorage.getHighScore();
+    final skinId = await _localStorage.getSelectedSkinId();
+    final themeId = await _localStorage.getSelectedThemeId();
+    setState(() {
+      _highScore = score;
+      _currentSelectedId = skinId;
+      _currentThemeId = themeId;
+      _isLoading = false;
+    });
   }
 
   void _selectSkin(BirdSkin skin) async {
-    // Only select if it is unlocked
-    if (widget.game.highScore >= skin.unlockScore) {
-      await widget.game.changeSkin(skin.id);
+    if (_highScore >= skin.unlockScore) {
+      await _localStorage.saveSelectedSkinId(skin.id);
       setState(() {
         _currentSelectedId = skin.id;
       });
@@ -39,9 +46,8 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
   }
 
   void _selectTheme(GameTheme theme) async {
-    // Only select if it is unlocked
-    if (widget.game.highScore >= theme.unlockScore) {
-      await widget.game.changeTheme(theme.id);
+    if (_highScore >= theme.unlockScore) {
+      await _localStorage.saveSelectedThemeId(theme.id);
       setState(() {
         _currentThemeId = theme.id;
       });
@@ -50,108 +56,109 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final highScore = widget.game.highScore;
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator(color: Colors.cyanAccent)),
+      );
+    }
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(180),
-            ),
-            child: Column(
-              children: [
-                // Header Section
-                SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'INVENTORY',
-                              style: GoogleFonts.outfit(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2.0,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 10.0,
-                                    color: Colors.cyanAccent.withAlpha(120),
-                                    offset: Offset.zero,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Your Best Score: $highScore pts',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withAlpha(150),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Back Button
-                        IconButton(
-                          onPressed: () {
-                            widget.game.overlays.remove('Inventory');
-                            widget.game.overlays.add('MainMenu');
-                          },
-                          icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // Tab Bar for Skins vs Themes selection
-                TabBar(
-                  tabs: const [
-                    Tab(text: 'SKINS'),
-                    Tab(text: 'THEMES'),
-                  ],
-                  indicatorColor: const Color(0xFFFFD700),
-                  labelColor: const Color(0xFFFFD700),
-                  unselectedLabelColor: Colors.white60,
-                  labelStyle: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                  unselectedLabelStyle: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                  dividerColor: Colors.transparent,
-                ),
-                const Divider(color: Colors.white24, height: 1),
-                
-                // Tab View
-                Expanded(
-                  child: TabBarView(
+        backgroundColor: Colors.black,
+        body: Container(
+          decoration: const BoxDecoration(
+            color: Colors.black,
+          ),
+          child: Column(
+            children: [
+              // Header Section
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Skins Tab (Existing grid)
-                      _buildSkinsTab(highScore),
-                      
-                      // Themes Tab (New list of theme cards)
-                      _buildThemesTab(highScore),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'INVENTORY',
+                            style: GoogleFonts.outfit(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2.0,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 10.0,
+                                  color: Colors.cyanAccent.withAlpha(120),
+                                  offset: Offset.zero,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Your Best Score: $_highScore pts',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withAlpha(150),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Back Button
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              
+              // Tab Bar for Skins vs Themes selection
+              TabBar(
+                tabs: const [
+                  Tab(text: 'SKINS'),
+                  Tab(text: 'THEMES'),
+                ],
+                indicatorColor: const Color(0xFFFFD700),
+                labelColor: const Color(0xFFFFD700),
+                unselectedLabelColor: Colors.white60,
+                labelStyle: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+                unselectedLabelStyle: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+                dividerColor: Colors.transparent,
+              ),
+              const Divider(color: Colors.white24, height: 1),
+              
+              // Tab View
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    // Skins Tab
+                    _buildSkinsTab(_highScore),
+                    
+                    // Themes Tab
+                    _buildThemesTab(_highScore),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -181,7 +188,7 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isActive
-                    ? const Color(0xFFFFD700) // Gold border for active skin
+                    ? const Color(0xFFFFD700)
                     : (isUnlocked ? Colors.white30 : Colors.white10),
                 width: isActive ? 2.5 : 1.0,
               ),
@@ -200,11 +207,9 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Lock Icon overlay / Bird preview
                   Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Visual Hummingbird Mascot Preview
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: CustomPaint(
@@ -212,7 +217,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
                           painter: BirdPainter(skin: skin),
                         ),
                       ),
-                      // Lock Mask if Locked
                       if (!isUnlocked)
                         Positioned.fill(
                           child: Container(
@@ -227,7 +231,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Skin Name
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
@@ -241,7 +244,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Unlock Description or Button
                   if (!isUnlocked)
                     Text(
                       'Requires ${skin.unlockScore} pts',
@@ -284,7 +286,7 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
     return GridView.builder(
       padding: const EdgeInsets.all(20.0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 1, // Single column to show rich preview cards
+        crossAxisCount: 1,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         childAspectRatio: 2.1,
@@ -321,7 +323,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
               borderRadius: BorderRadius.circular(20),
               child: Stack(
                 children: [
-                  // Theme Background Image Preview (faded cover)
                   Positioned.fill(
                     child: Opacity(
                       opacity: isUnlocked ? 0.35 : 0.1,
@@ -331,8 +332,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
                       ),
                     ),
                   ),
-                  
-                  // Text readability gradient overlay
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
@@ -347,8 +346,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
                       ),
                     ),
                   ),
-                  
-                  // Content: Info and Obstacle Preview
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -403,8 +400,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
                       ],
                     ),
                   ),
-                  
-                  // Lock Icon Overlay if Locked
                   if (!isUnlocked)
                     Positioned.fill(
                       child: Container(
@@ -426,7 +421,6 @@ class _InventoryOverlayState extends State<InventoryOverlay> {
   }
 }
 
-/// CustomPainter to render the origami hummingbird in the UI grid
 class BirdPainter extends CustomPainter {
   final BirdSkin skin;
 

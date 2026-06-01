@@ -208,8 +208,9 @@ class GameOverOverlay extends StatelessWidget {
                         child: Material(
                           color: Colors.white12,
                           child: InkWell(
-                            onTap: game.resetGame, // Returns to main menu screen
-                            splashColor: Colors.white.withAlpha(50),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                            },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 48,

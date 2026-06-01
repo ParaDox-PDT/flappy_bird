@@ -153,8 +153,8 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     bird = Bird();
     world.add(bird);
 
-    // Initially pause the engine until the player clicks "PLAY NOW"
-    pauseEngine();
+    // Start the game session immediately upon loading
+    startGame();
   }
 
   /// Starts or restarts the gameplay session
