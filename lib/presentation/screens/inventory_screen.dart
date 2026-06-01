@@ -102,7 +102,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Your Best Score: $_highScore pts',
+                            'Your Best Score: $_highScore points',
                             style: GoogleFonts.inter(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -246,7 +246,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   const SizedBox(height: 4),
                   if (!isUnlocked)
                     Text(
-                      'Requires ${skin.unlockScore} pts',
+                      'Requires ${skin.unlockScore} points',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: Colors.redAccent.shade100,
@@ -367,7 +367,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               const SizedBox(height: 4),
                               if (!isUnlocked)
                                 Text(
-                                  'Requires ${theme.unlockScore} pts',
+                                  'Requires ${theme.unlockScore} points',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     color: Colors.redAccent.shade100,

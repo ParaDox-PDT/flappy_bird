@@ -96,7 +96,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                     const SizedBox(height: 8),
                     // High Score Record Label
                     Text(
-                      'Best Score: $_highScore pts',
+                      'Best Score: $_highScore points',
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
