@@ -1,11 +1,30 @@
+import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import '../domain/models/game_state.dart';
 import '../domain/models/bird_skin.dart';
+import '../domain/models/game_theme.dart';
 import '../data/datasources/local_storage.dart';
 import 'components/bird.dart';
 import 'components/pipe_pair.dart';
+
+class ObstacleSprites {
+  final Sprite topEnd;
+  final Sprite shaft;
+  final Sprite bottomEnd;
+  final double topEndHeight;
+  final double bottomEndHeight;
+
+  ObstacleSprites({
+    required this.topEnd,
+    required this.shaft,
+    required this.bottomEnd,
+    required this.topEndHeight,
+    required this.bottomEndHeight,
+  });
+}
 
 class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   // ValueNotifier allows Flutter widgets to easily listen to state changes
@@ -15,6 +34,9 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   final ValueNotifier<int> score = ValueNotifier<int>(0);
 
   late final Bird bird;
+  late ObstacleSprites normalObstacle;
+  late final ObstacleSprites goldenObstacle;
+  late ParallaxComponent background;
   final LocalStorage _localStorage = LocalStorage();
 
   // Score & Spawner tracking variables
@@ -24,8 +46,9 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   double lastGapCenter = 0.0;
   static const double pipeSpacing = 350.0; // Distance between each pipe pair
 
-  // Skin inventory variables
+  // Skin & Theme inventory variables
   String selectedSkinId = 'default';
+  String selectedThemeId = 'theme_1';
 
   /// Resolves the currently active skin object
   BirdSkin get selectedSkin => BirdSkin.allSkins.firstWhere(
@@ -47,13 +70,84 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     }
   }
 
+  /// Resolves the currently active theme object
+  GameTheme get selectedTheme => GameTheme.allThemes.firstWhere(
+        (t) => t.id == selectedThemeId,
+        orElse: () => GameTheme.allThemes.first,
+      );
+
+  /// Returns the list of all themes currently unlocked by the player's high score
+  List<GameTheme> getUnlockedThemes() {
+    return GameTheme.allThemes.where((t) => highScore >= t.unlockScore).toList();
+  }
+
+  /// Sets, persists, and dynamically reloads a new theme selection
+  Future<void> changeTheme(String themeId) async {
+    final theme = GameTheme.allThemes.firstWhere((t) => t.id == themeId, orElse: () => GameTheme.allThemes.first);
+    if (highScore >= theme.unlockScore) {
+      selectedThemeId = themeId;
+      await _localStorage.saveSelectedThemeId(themeId);
+      
+      // Reload obstacle sprites for the new theme
+      normalObstacle = ObstacleSprites(
+        topEnd: await loadSprite(theme.obstacleImage, srcPosition: theme.topEndPos, srcSize: theme.topEndSize),
+        shaft: await loadSprite(theme.obstacleImage, srcPosition: theme.shaftPos, srcSize: theme.shaftSize),
+        bottomEnd: await loadSprite(theme.obstacleImage, srcPosition: theme.bottomEndPos, srcSize: theme.bottomEndSize),
+        topEndHeight: theme.topEndHeight,
+        bottomEndHeight: theme.bottomEndHeight,
+      );
+
+      // Recreate the parallax background
+      background.removeFromParent();
+      background = await loadParallaxComponent(
+        [
+          ParallaxImageData(theme.backgroundImage),
+        ],
+        baseVelocity: Vector2(10.0, 0),
+        repeat: ImageRepeat.repeatX,
+      );
+      camera.backdrop.add(background);
+    }
+  }
+
   @override
   Future<void> onLoad() async {
     super.onLoad();
 
-    // Load persisted high score and skin selection from shared_preferences
+    // Load persisted high score, skin and theme selection from shared_preferences
     highScore = await _localStorage.getHighScore();
     selectedSkinId = await _localStorage.getSelectedSkinId();
+    selectedThemeId = await _localStorage.getSelectedThemeId();
+
+    final theme = selectedTheme;
+
+    // Load normal obstacle slices (aspect-ratio preserved heights for 64px width) based on selected theme
+    normalObstacle = ObstacleSprites(
+      topEnd: await loadSprite(theme.obstacleImage, srcPosition: theme.topEndPos, srcSize: theme.topEndSize),
+      shaft: await loadSprite(theme.obstacleImage, srcPosition: theme.shaftPos, srcSize: theme.shaftSize),
+      bottomEnd: await loadSprite(theme.obstacleImage, srcPosition: theme.bottomEndPos, srcSize: theme.bottomEndSize),
+      topEndHeight: theme.topEndHeight,
+      bottomEndHeight: theme.bottomEndHeight,
+    );
+
+    // Load golden obstacle slices (always use golden_obstacle_1)
+    goldenObstacle = ObstacleSprites(
+      topEnd: await loadSprite('golden_obstacle_1.png', srcPosition: Vector2(276, 128), srcSize: Vector2(472, 210)),
+      shaft: await loadSprite('golden_obstacle_1.png', srcPosition: Vector2(304, 338), srcSize: Vector2(416, 830)),
+      bottomEnd: await loadSprite('golden_obstacle_1.png', srcPosition: Vector2(282, 1168), srcSize: Vector2(460, 290)),
+      topEndHeight: 29.0, // 64 * (210/472)
+      bottomEndHeight: 40.0, // 64 * (290/460)
+    );
+
+    // Add parallax background to camera backdrop
+    background = await loadParallaxComponent(
+      [
+        ParallaxImageData(theme.backgroundImage),
+      ],
+      baseVelocity: Vector2(10.0, 0),
+      repeat: ImageRepeat.repeatX,
+    );
+    camera.backdrop.add(background);
 
     // Instantiate and add the bird to the game world.
     bird = Bird();
@@ -151,6 +245,15 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   @override
   void update(double dt) {
     super.update(dt);
+
+    // Update background parallax velocity based on game state
+    if (gameState.value == GameState.playing) {
+      background.parallax?.baseVelocity = Vector2(48.0, 0);
+    } else if (gameState.value == GameState.gameOver) {
+      background.parallax?.baseVelocity = Vector2.zero();
+    } else {
+      background.parallax?.baseVelocity = Vector2(10.0, 0);
+    }
 
     if (gameState.value == GameState.playing) {
       // Camera viewfinder follows bird's X position with a fixed offset (+120)

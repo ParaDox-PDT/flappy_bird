@@ -193,6 +193,42 @@ class GameOverOverlay extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  // Main Menu Button
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.white30, width: 1.5),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: Material(
+                          color: Colors.white12,
+                          child: InkWell(
+                            onTap: game.resetGame, // Returns to main menu screen
+                            splashColor: Colors.white.withAlpha(50),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 48,
+                                vertical: 14,
+                              ),
+                              child: Text(
+                                'MAIN MENU',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.5,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

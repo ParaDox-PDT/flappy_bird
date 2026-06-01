@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart';
 import '../flappy_bird_game.dart';
 import '../../domain/models/game_state.dart';
 import 'pipe.dart';
@@ -58,21 +57,22 @@ class PipePair extends PositionComponent with HasGameReference<FlappyBirdGame> {
 
     final pipeWidth = 64.0; // Standard pipe width
 
-    // Visual coloring: Gold color for the record-beating pipe, Green for others
-    final pipeColor = isGolden ? const Color(0xFFFFD700) : const Color(0xFF2E7D32);
+    final pipeSprites = isGolden ? game.goldenObstacle : game.normalObstacle;
 
     // Top Pipe
     add(Pipe(
+      sprites: pipeSprites,
       position: Vector2(0, topBound),
       size: Vector2(pipeWidth, topPipeHeight),
-      color: pipeColor,
+      isTop: true,
     ));
 
     // Bottom Pipe
     add(Pipe(
+      sprites: pipeSprites,
       position: Vector2(0, gapCenter + gapHeight / 2),
       size: Vector2(pipeWidth, bottomPipeHeight),
-      color: pipeColor,
+      isTop: false,
     ));
   }
 
