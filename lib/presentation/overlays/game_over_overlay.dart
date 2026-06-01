@@ -33,6 +33,7 @@ class GameOverOverlay extends StatelessWidget {
                   // Game Over Glowing Text
                   Text(
                     'GAME OVER',
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.outfit(
                       fontSize: 54,
                       fontWeight: FontWeight.w900,

@@ -21,8 +21,11 @@ class Pipe extends PositionComponent with CollisionCallbacks {
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    // Add a hitbox that covers the entire rectangular area of the pipe
-    add(RectangleHitbox());
+    // Add a slightly shrunk hitbox horizontally to make close calls feel more realistic
+    add(RectangleHitbox(
+      size: Vector2(56, size.y),
+      position: Vector2(4, 0),
+    ));
   }
 
   @override

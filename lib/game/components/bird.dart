@@ -21,8 +21,12 @@ class Bird extends PositionComponent with CollisionCallbacks, HasGameReference<F
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    // Add collision detection hitbox
-    add(RectangleHitbox());
+    // Add a smaller hitbox that only covers the core body of the bird,
+    // leaving margins for wings and beak to make collisions feel fair and realistic.
+    add(RectangleHitbox(
+      size: Vector2(36, 24),
+      position: Vector2(8, 9),
+    ));
   }
 
   @override
