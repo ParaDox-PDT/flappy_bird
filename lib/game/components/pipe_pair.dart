@@ -2,17 +2,21 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../flappy_bird_game.dart';
+import '../../domain/models/game_state.dart';
 import 'pipe.dart';
 
 class PipePair extends PositionComponent with HasGameReference<FlappyBirdGame> {
   final double gapHeight;
   final double gapCenter;
   final double screenHeight;
+  final bool isGolden; // Highlights this pipe pair if it matches the current high score
+  bool isPassed = false; // Tracks if the bird has cleared this obstacle
 
   PipePair({
     required double x,
     required double prevGapCenter,
     required this.screenHeight,
+    required this.isGolden,
     this.gapHeight = 150.0, // Vertically spaced gap for the bird to fly through
   })  : gapCenter = _calculateGapCenter(prevGapCenter, screenHeight),
         super(position: Vector2(x, 0));
@@ -54,24 +58,36 @@ class PipePair extends PositionComponent with HasGameReference<FlappyBirdGame> {
 
     final pipeWidth = 64.0; // Standard pipe width
 
+    // Visual coloring: Gold color for the record-beating pipe, Green for others
+    final pipeColor = isGolden ? const Color(0xFFFFD700) : const Color(0xFF2E7D32);
+
     // Top Pipe
     add(Pipe(
       position: Vector2(0, topBound),
       size: Vector2(pipeWidth, topPipeHeight),
-      color: const Color(0xFF2E7D32), // Vibrant Dark Green
+      color: pipeColor,
     ));
 
     // Bottom Pipe
     add(Pipe(
       position: Vector2(0, gapCenter + gapHeight / 2),
       size: Vector2(pipeWidth, bottomPipeHeight),
-      color: const Color(0xFF2E7D32),
+      color: pipeColor,
     ));
   }
 
   @override
   void update(double dt) {
     super.update(dt);
+
+    // Score passing check:
+    // When the bird's X coordinate crosses past the middle of this pipe, increment score
+    if (!isPassed && game.gameState.value == GameState.playing) {
+      if (game.bird.position.x > position.x + 32.0) {
+        isPassed = true;
+        game.score.value++;
+      }
+    }
 
     // Automatically remove from the game loop once the pipe pair moves off the left side of the screen
     final cameraX = game.camera.viewfinder.position.x;

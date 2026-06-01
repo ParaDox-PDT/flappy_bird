@@ -2,23 +2,33 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../domain/models/game_state.dart';
+import '../data/datasources/local_storage.dart';
 import 'components/bird.dart';
 import 'components/pipe_pair.dart';
 
 class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection {
   // ValueNotifier allows Flutter widgets to easily listen to state changes
   final ValueNotifier<GameState> gameState = ValueNotifier<GameState>(GameState.menu);
+  
+  // Real-time score notifier
+  final ValueNotifier<int> score = ValueNotifier<int>(0);
 
   late final Bird bird;
+  final LocalStorage _localStorage = LocalStorage();
 
-  // Spawner tracking variables
+  // Score & Spawner tracking variables
+  int highScore = 0;
+  int pipesSpawnedCount = 0; // Tracks the count of pipes generated in the current run
   double lastSpawnX = 0.0;
   double lastGapCenter = 0.0;
-  static const double pipeSpacing = 350.0; // Distance between each pipe pair (extended for playability)
+  static const double pipeSpacing = 350.0; // Distance between each pipe pair
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
+
+    // Load persisted high score from shared_preferences
+    highScore = await _localStorage.getHighScore();
 
     // Instantiate and add the bird to the game world.
     bird = Bird();
@@ -32,9 +42,10 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   void startGame() {
     gameState.value = GameState.playing;
     
-    // Clear menu and game over overlays
+    // Clear menu and game over overlays, display HUD
     overlays.remove('MainMenu');
     overlays.remove('GameOver');
+    overlays.add('Hud');
 
     // Remove any pipes remaining from the previous run
     world.children.whereType<PipePair>().forEach((p) => p.removeFromParent());
@@ -45,14 +56,21 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     // Center camera's viewport horizontally with an offset so the bird is on the left
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
 
-    // Reset spawning parameters
-    lastGapCenter = 0.0; // Start at vertical center
-    lastSpawnX = bird.position.x + 400.0;
+    // Reset spawning parameters & scores
+    score.value = 0;
+    pipesSpawnedCount = 0;
+    lastGapCenter = 0.0;
     
+    lastSpawnX = bird.position.x + 400.0;
+    pipesSpawnedCount++;
+
+    // First pipe pair: check if it matches high score record to color it gold
+    final isGolden = highScore > 0 && pipesSpawnedCount == highScore;
     final firstPipe = PipePair(
       x: lastSpawnX,
       prevGapCenter: lastGapCenter,
       screenHeight: size.y,
+      isGolden: isGolden,
     );
     world.add(firstPipe);
     lastGapCenter = firstPipe.gapCenter;
@@ -65,14 +83,25 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   void gameOver() {
     gameState.value = GameState.gameOver;
     bird.isDead = true;
+    
+    // Remove HUD and display Game Over screen
+    overlays.remove('Hud');
     overlays.add('GameOver');
+    
     pauseEngine();
+
+    // Verify if player reached a new High Score record
+    if (score.value > highScore) {
+      highScore = score.value;
+      _localStorage.saveHighScore(highScore);
+    }
   }
 
   /// Returns back to main menu
   void resetGame() {
     gameState.value = GameState.menu;
     overlays.remove('GameOver');
+    overlays.remove('Hud');
     overlays.add('MainMenu');
     
     // Clean up active obstacles
@@ -80,6 +109,8 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     bird.reset();
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
     lastGapCenter = 0.0;
+    score.value = 0;
+    pipesSpawnedCount = 0;
     pauseEngine();
   }
 
@@ -109,10 +140,16 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
       // Spawn buffer: 200 pixels before the pipe actually enters the viewport from the right
       if (rightEdge + 200 > lastSpawnX) {
         lastSpawnX += pipeSpacing;
+        pipesSpawnedCount++;
+
+        // Determine if this spawned pipe corresponds to the current High Score record
+        final isGolden = highScore > 0 && pipesSpawnedCount == highScore;
+        
         final newPipe = PipePair(
           x: lastSpawnX,
           prevGapCenter: lastGapCenter,
           screenHeight: size.y,
+          isGolden: isGolden,
         );
         world.add(newPipe);
         lastGapCenter = newPipe.gapCenter;

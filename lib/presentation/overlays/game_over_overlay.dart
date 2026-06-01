@@ -13,6 +13,9 @@ class GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the player just broke their high score record
+    final isNewRecord = game.score.value >= game.highScore && game.score.value > 0;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: BackdropFilter(
@@ -50,16 +53,89 @@ class GameOverOverlay extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Encouraging message
-                  Text(
-                    'Your wings clipped. Try again!',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white.withAlpha(180),
-                      letterSpacing: 1.2,
+                  // New Record Badge
+                  if (isNewRecord)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withAlpha(40),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                      ),
+                      child: Text(
+                        'NEW RECORD!',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFFFD700),
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      'Your wings clipped. Try again!',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white.withAlpha(180),
+                        letterSpacing: 1.2,
+                      ),
                     ),
+                  const SizedBox(height: 40),
+                  // Score statistics card
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Current Score
+                      Column(
+                        children: [
+                          Text(
+                            'SCORE',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withAlpha(140),
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${game.score.value}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 64),
+                      // High Score
+                      Column(
+                        children: [
+                          Text(
+                            'BEST',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withAlpha(140),
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${game.highScore}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFFFFD700), // Gold Color
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 48),
                   // Restart Button
