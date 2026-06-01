@@ -13,7 +13,8 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
 
   // Spawner tracking variables
   double lastSpawnX = 0.0;
-  static const double pipeSpacing = 280.0; // Distance between each pipe pair
+  double lastGapCenter = 0.0;
+  static const double pipeSpacing = 350.0; // Distance between each pipe pair (extended for playability)
 
   @override
   Future<void> onLoad() async {
@@ -44,9 +45,17 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     // Center camera's viewport horizontally with an offset so the bird is on the left
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
 
-    // Set initial spawning X coordinate (placed ahead of the bird)
+    // Reset spawning parameters
+    lastGapCenter = 0.0; // Start at vertical center
     lastSpawnX = bird.position.x + 400.0;
-    world.add(PipePair(x: lastSpawnX));
+    
+    final firstPipe = PipePair(
+      x: lastSpawnX,
+      prevGapCenter: lastGapCenter,
+      screenHeight: size.y,
+    );
+    world.add(firstPipe);
+    lastGapCenter = firstPipe.gapCenter;
 
     // Resume the game loop
     resumeEngine();
@@ -70,6 +79,7 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
     world.children.whereType<PipePair>().forEach((p) => p.removeFromParent());
     bird.reset();
     camera.viewfinder.position = Vector2(bird.position.x + 120, 0);
+    lastGapCenter = 0.0;
     pauseEngine();
   }
 
@@ -99,7 +109,13 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
       // Spawn buffer: 200 pixels before the pipe actually enters the viewport from the right
       if (rightEdge + 200 > lastSpawnX) {
         lastSpawnX += pipeSpacing;
-        world.add(PipePair(x: lastSpawnX));
+        final newPipe = PipePair(
+          x: lastSpawnX,
+          prevGapCenter: lastGapCenter,
+          screenHeight: size.y,
+        );
+        world.add(newPipe);
+        lastGapCenter = newPipe.gapCenter;
       }
 
       // Check vertical boundaries (screen bounds in world coordinates)

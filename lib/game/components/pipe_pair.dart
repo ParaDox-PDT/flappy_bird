@@ -6,27 +6,47 @@ import 'pipe.dart';
 
 class PipePair extends PositionComponent with HasGameReference<FlappyBirdGame> {
   final double gapHeight;
+  final double gapCenter;
+  final double screenHeight;
 
   PipePair({
     required double x,
+    required double prevGapCenter,
+    required this.screenHeight,
     this.gapHeight = 150.0, // Vertically spaced gap for the bird to fly through
-  }) : super(position: Vector2(x, 0));
+  })  : gapCenter = _calculateGapCenter(prevGapCenter, screenHeight),
+        super(position: Vector2(x, 0));
+
+  static double _calculateGapCenter(double prev, double screenHeight) {
+    final halfHeight = screenHeight / 2;
+    final topBound = -halfHeight;
+    final bottomBound = halfHeight;
+
+    final random = Random();
+    // Constrain the deviation between consecutive pipes to 100 pixels vertically
+    // This ensures the next gap is comfortably reachable by the bird's physics
+    const maxVerticalDev = 100.0;
+    
+    double minCenter = prev - maxVerticalDev;
+    double maxCenter = prev + maxVerticalDev;
+
+    // Safety margins from screen edges
+    final absoluteMin = topBound + 120.0;
+    final absoluteMax = bottomBound - 120.0;
+
+    minCenter = minCenter.clamp(absoluteMin, absoluteMax);
+    maxCenter = maxCenter.clamp(absoluteMin, absoluteMax);
+
+    return minCenter + random.nextDouble() * (maxCenter - minCenter);
+  }
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
 
-    final screenHeight = game.size.y;
     final halfHeight = screenHeight / 2;
     final topBound = -halfHeight;
     final bottomBound = halfHeight;
-
-    // Randomize the center coordinate of the gap
-    // Ensuring it remains within a safe area (at least 120 pixels from edges)
-    final random = Random();
-    final minGapCenter = topBound + 120.0;
-    final maxGapCenter = bottomBound - 120.0;
-    final gapCenter = minGapCenter + random.nextDouble() * (maxGapCenter - minGapCenter);
 
     // Calculate vertical size of top and bottom pipes
     final topPipeHeight = (gapCenter - gapHeight / 2) - topBound;
