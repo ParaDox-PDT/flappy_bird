@@ -1,4 +1,4 @@
-package com.paradox.voicedox.flappy_bird
+package com.skybird.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -7,6 +7,7 @@ import '../domain/models/game_state.dart';
 import '../domain/models/bird_skin.dart';
 import '../domain/models/game_theme.dart';
 import '../data/datasources/local_storage.dart';
+import '../data/datasources/firebase_service.dart';
 import 'components/bird.dart';
 import 'components/pipe_pair.dart';
 
@@ -38,6 +39,7 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
   late final ObstacleSprites goldenObstacle;
   late ParallaxComponent background;
   final LocalStorage _localStorage = LocalStorage();
+  final FirebaseService _firebaseService = FirebaseService();
 
   // Score & Spawner tracking variables
   int highScore = 0;
@@ -215,6 +217,11 @@ class FlappyBirdGame extends FlameGame with TapCallbacks, HasCollisionDetection 
       highScore = score.value;
       _localStorage.saveHighScore(highScore);
     }
+
+    // Submit score to global leaderboard
+    _firebaseService.submitScore(score.value).catchError((e) {
+      print('Failed to submit score to Firebase: $e');
+    });
   }
 
   /// Returns back to main menu

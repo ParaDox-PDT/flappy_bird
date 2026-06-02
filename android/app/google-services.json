@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "712934930424",
+    "project_id": "sky-bird-game-e87f1",
+    "storage_bucket": "sky-bird-game-e87f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:712934930424:android:61a1a923f44ae6a112880d",
+        "android_client_info": {
+          "package_name": "com.skybird.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "712934930424-rkv356upjch1v04hpcrgqi1k4qtrkehd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.skybird.app",
+            "certificate_hash": "9f51ca12c57967214096ce6dc5a732a6095001c5"
+          }
+        },
+        {
+          "client_id": "712934930424-lbu36vqpmvu3o2oevchka2ou5hgk6hns.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7N5j42NB8sUT_bFdb383UmTlk_4j10TM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "712934930424-lbu36vqpmvu3o2oevchka2ou5hgk6hns.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "712934930424-06gbsm09augotg5gs8q51p5n17kas49m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.skybird.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

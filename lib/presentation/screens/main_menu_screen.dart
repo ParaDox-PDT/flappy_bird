@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/datasources/local_storage.dart';
+import '../../data/datasources/firebase_service.dart';
 import '../../domain/models/game_theme.dart';
 import 'game_screen.dart';
 import 'inventory_screen.dart';
+import 'leaderboard_screen.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
@@ -14,14 +17,18 @@ class MainMenuScreen extends StatefulWidget {
 
 class _MainMenuScreenState extends State<MainMenuScreen> {
   final LocalStorage _localStorage = LocalStorage();
+  final FirebaseService _firebaseService = FirebaseService();
   int _highScore = 0;
   GameTheme _currentTheme = GameTheme.allThemes.first;
   bool _isLoading = true;
+  User? _currentUser;
+  bool _isSigningIn = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _setupAuthListener();
   }
 
   Future<void> _loadData() async {
@@ -36,6 +43,59 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       _currentTheme = theme;
       _isLoading = false;
     });
+  }
+
+  void _setupAuthListener() {
+    _firebaseService.authStateChanges.listen((user) {
+      if (mounted) {
+        setState(() {
+          _currentUser = user;
+        });
+        // Proactively sync high score when the user signs in
+        if (user != null && _highScore > 0) {
+          _firebaseService.submitScore(_highScore);
+        }
+      }
+    });
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isSigningIn = true;
+    });
+    try {
+      await _firebaseService.signInWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In failed: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSigningIn = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleSignOut() async {
+    try {
+      await _firebaseService.signOut();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sign-out failed: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -60,8 +120,60 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           // Dark Glassmorphism Overlay
           Positioned.fill(
             child: Container(
-              color: Colors.black.withAlpha(115), // 0.45 opacity
+              color: Colors.black.withAlpha(128), // 0.50 opacity
             ),
+          ),
+          // Profile Indicator (Top Right)
+          Positioned(
+            top: 50,
+            right: 20,
+            child: _currentUser != null
+                ? Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _currentUser!.displayName ?? 'Player',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _handleSignOut,
+                            child: Text(
+                              'Sign Out',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.cyanAccent, width: 1.5),
+                        ),
+                        child: ClipOval(
+                          child: _currentUser!.photoURL != null
+                              ? Image.network(
+                                  _currentUser!.photoURL!,
+                                  width: 36,
+                                  height: 36,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Icon(Icons.person, color: Colors.white, size: 24),
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
           // Content
           SafeArea(
@@ -116,110 +228,53 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         letterSpacing: 1.0,
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
                     // Play Button
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Container(
-                        width: 250,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.cyanAccent.withAlpha(76),
-                              blurRadius: 20,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(28),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => const GameScreen()),
-                                );
-                                _loadData(); // Reload high score and theme on return
-                              },
-                              splashColor: Colors.white.withAlpha(76),
-                              highlightColor: Colors.white.withAlpha(26),
-                              child: Ink(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF00E5FF),
-                                      Color(0xFF2979FF),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'PLAY NOW',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 2.0,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                    _buildMenuButton(
+                      text: 'PLAY NOW',
+                      isGlow: true,
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const GameScreen()),
+                        );
+                        _loadData(); // Reload high score and theme on return
+                      },
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00E5FF), Color(0xFF2979FF)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Skins & Themes Button
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Container(
-                        width: 250,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: Colors.white30, width: 1.5),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(28),
-                          child: Material(
-                            color: Colors.white12,
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => const InventoryScreen()),
-                                );
-                                _loadData(); // Reload theme in case they changed it
-                              },
-                              splashColor: Colors.white.withAlpha(50),
-                              child: Center(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.style_outlined, color: Colors.white, size: 20),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'SKINS & THEMES',
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.5,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                    // Leaderboard Button (Conditional or Prompts Google Sign In)
+                    _currentUser != null
+                        ? _buildMenuButton(
+                            text: 'LEADERBOARD',
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                              );
+                            },
+                            icon: Icons.emoji_events,
+                          )
+                        : _buildMenuButton(
+                            text: _isSigningIn ? 'SIGNING IN...' : 'SIGN IN TO LEADERBOARD',
+                            onTap: _isSigningIn ? null : _handleGoogleSignIn,
+                            icon: Icons.login,
+                            backgroundColor: Colors.white.withAlpha(20),
+                            borderColor: Colors.white30,
                           ),
-                        ),
-                      ),
+                    const SizedBox(height: 16),
+                    // Skins & Themes Button
+                    _buildMenuButton(
+                      text: 'SKINS & THEMES',
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const InventoryScreen()),
+                        );
+                        _loadData(); // Reload theme in case they changed it
+                      },
+                      icon: Icons.style_outlined,
                     ),
                   ],
                 ),
@@ -227,6 +282,71 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMenuButton({
+    required String text,
+    required VoidCallback? onTap,
+    bool isGlow = false,
+    IconData? icon,
+    Gradient? gradient,
+    Color? backgroundColor,
+    Color borderColor = Colors.white30,
+  }) {
+    return MouseRegion(
+      cursor: onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: Container(
+        width: 280,
+        height: 54,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          border: gradient == null ? Border.all(color: borderColor, width: 1.5) : null,
+          boxShadow: isGlow && onTap != null
+              ? [
+                  BoxShadow(
+                    color: Colors.cyanAccent.withAlpha(76),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : [],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: Material(
+            color: gradient == null ? (backgroundColor ?? Colors.white12) : Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              splashColor: Colors.white.withAlpha(50),
+              child: Container(
+                decoration: gradient != null ? BoxDecoration(gradient: gradient) : null,
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        text,
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
