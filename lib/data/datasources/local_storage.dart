@@ -4,6 +4,7 @@ class LocalStorage {
   static const String _highScoreKey = 'high_score_record';
   static const String _selectedSkinIdKey = 'selected_skin_id_record';
   static const String _selectedThemeIdKey = 'selected_theme_id_record';
+  static const String _isMutedKey = 'is_muted_record';
 
   /// Fetches the stored high score, returning 0 if not set
   Future<int> getHighScore() async {
@@ -39,5 +40,17 @@ class LocalStorage {
   Future<void> saveSelectedThemeId(String themeId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_selectedThemeIdKey, themeId);
+  }
+
+  /// Fetches the sound mute status, returning false if not set
+  Future<bool> getIsMuted() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isMutedKey) ?? false;
+  }
+
+  /// Saves the sound mute status to local storage
+  Future<void> saveIsMuted(bool isMuted) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isMutedKey, isMuted);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flame_audio/flame_audio.dart';
 import '../../data/datasources/local_storage.dart';
 import '../../data/datasources/firebase_service.dart';
 import '../../domain/models/game_theme.dart';
@@ -23,6 +24,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   bool _isLoading = true;
   User? _currentUser;
   bool _isSigningIn = false;
+  bool _isMuted = false;
 
   @override
   void initState() {
@@ -34,6 +36,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   Future<void> _loadData() async {
     final score = await _localStorage.getHighScore();
     final themeId = await _localStorage.getSelectedThemeId();
+    final isMuted = await _localStorage.getIsMuted();
     final theme = GameTheme.allThemes.firstWhere(
       (t) => t.id == themeId,
       orElse: () => GameTheme.allThemes.first,
@@ -41,8 +44,20 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     setState(() {
       _highScore = score;
       _currentTheme = theme;
+      _isMuted = isMuted;
       _isLoading = false;
     });
+
+    // Start background music if not muted
+    if (!isMuted) {
+      try {
+        if (!FlameAudio.bgm.isPlaying) {
+          await FlameAudio.bgm.play('clear_summer_canopy.mp3');
+        }
+      } catch (e) {
+        print('Error playing background music: $e');
+      }
+    }
   }
 
   void _setupAuthListener() {
@@ -57,6 +72,26 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
         }
       }
     });
+  }
+
+  Future<void> _toggleMute() async {
+    final newMuted = !_isMuted;
+    setState(() {
+      _isMuted = newMuted;
+    });
+    await _localStorage.saveIsMuted(newMuted);
+
+    try {
+      if (newMuted) {
+        await FlameAudio.bgm.stop();
+      } else {
+        if (!FlameAudio.bgm.isPlaying) {
+          await FlameAudio.bgm.play('clear_summer_canopy.mp3');
+        }
+      }
+    } catch (e) {
+      print('Error toggling mute: $e');
+    }
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -121,6 +156,26 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           Positioned.fill(
             child: Container(
               color: Colors.black.withAlpha(128), // 0.50 opacity
+            ),
+          ),
+          // Sound Toggle (Top Left)
+          Positioned(
+            top: 50,
+            left: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withAlpha(100),
+                border: Border.all(color: Colors.white24, width: 1),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                  color: _isMuted ? Colors.redAccent : Colors.cyanAccent,
+                  size: 24,
+                ),
+                onPressed: _toggleMute,
+              ),
             ),
           ),
           // Profile Indicator (Top Right)
