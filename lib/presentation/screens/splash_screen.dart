@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../data/datasources/local_storage.dart';
+import '../../domain/models/game_theme.dart';
 import 'main_menu_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -10,6 +12,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  final LocalStorage _localStorage = LocalStorage();
+  GameTheme _currentTheme = GameTheme.allThemes.first;
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -17,6 +21,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    _loadTheme();
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -41,6 +46,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     // Navigate to Main Menu after 2.8 seconds
     Future.delayed(const Duration(milliseconds: 2800), _navigateToMainMenu);
+  }
+
+  Future<void> _loadTheme() async {
+    final themeId = await _localStorage.getSelectedThemeId();
+    final theme = GameTheme.allThemes.firstWhere(
+      (t) => t.id == themeId,
+      orElse: () => GameTheme.allThemes.first,
+    );
+    if (mounted) {
+      setState(() {
+        _currentTheme = theme;
+      });
+    }
   }
 
   void _navigateToMainMenu() {
@@ -71,7 +89,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background ambient glows
+          // Dynamic Theme Background Image (No longer plain black!)
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/${_currentTheme.backgroundImage}',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Dark Nature Overlay
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withAlpha(140), // 0.55 opacity
+            ),
+          ),
+          // Ambient warm sun/forest glows
           Positioned(
             top: -50,
             left: -50,
@@ -82,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.cyanAccent.withAlpha(20),
+                    color: const Color(0xFF81C784).withAlpha(30), // soft forest green glow
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -100,7 +131,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blueAccent.withAlpha(20),
+                    color: const Color(0xFFFFD54F).withAlpha(20), // soft sunshine glow
                     blurRadius: 120,
                     spreadRadius: 60,
                   ),
@@ -120,7 +151,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // App Logo with glowing border container
+                        // App Logo with woody/golden border
                         Container(
                           width: 140,
                           height: 140,
@@ -128,14 +159,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.cyanAccent.withAlpha(50),
+                                color: const Color(0xFFFFD54F).withAlpha(40), // soft sunshine shadow
                                 blurRadius: 30,
                                 spreadRadius: 2,
                               ),
                             ],
                             border: Border.all(
-                              color: Colors.cyanAccent.withAlpha(100),
-                              width: 2.0,
+                              color: const Color(0xFF8D6E63).withAlpha(150), // Woody brown border
+                              width: 3.0,
                             ),
                           ),
                           child: ClipOval(
@@ -146,7 +177,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(height: 28),
-                        // Title with glowing text style
+                        // Title with warm forest glow
                         Text(
                           'SKY BIRD',
                           style: GoogleFonts.outfit(
@@ -157,12 +188,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             shadows: [
                               Shadow(
                                 blurRadius: 15.0,
-                                color: Colors.cyanAccent.withAlpha(180),
+                                color: const Color(0xFF81C784).withAlpha(150), // forest green glow
                                 offset: const Offset(0, 0),
                               ),
                               Shadow(
                                 blurRadius: 25.0,
-                                color: Colors.blueAccent.withAlpha(100),
+                                color: const Color(0xFFFFD54F).withAlpha(100), // golden sun glow
                                 offset: const Offset(0, 0),
                               ),
                             ],
@@ -176,16 +207,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 2.0,
-                            color: Colors.white60,
+                            color: Colors.white70,
                           ),
                         ),
                         const SizedBox(height: 48),
-                        // Loading indicator
+                        // Organic green progress indicator
                         SizedBox(
                           width: 120,
                           child: LinearProgressIndicator(
                             backgroundColor: Colors.white12,
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.cyanAccent),
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF81C784)), // Sage Green
                             minHeight: 3,
                             borderRadius: BorderRadius.circular(2),
                           ),

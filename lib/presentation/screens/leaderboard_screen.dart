@@ -57,7 +57,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.cyanAccent.withAlpha(26),
+                    color: const Color(0xFF81C784).withAlpha(30),
                     blurRadius: 120,
                     spreadRadius: 60,
                   ),
@@ -75,7 +75,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blueAccent.withAlpha(26),
+                    color: const Color(0xFFFFD54F).withAlpha(20),
                     blurRadius: 140,
                     spreadRadius: 70,
                   ),
@@ -110,7 +110,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                             shadows: [
                               Shadow(
                                 blurRadius: 10,
-                                color: Colors.cyanAccent.withAlpha(128),
+                                color: const Color(0xFF81C784).withAlpha(150),
                               ),
                             ],
                           ),
@@ -127,7 +127,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const Center(
                               child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.cyanAccent),
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF81C784)),
                               ),
                             );
                           }
@@ -220,18 +220,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isSelf 
-            ? Colors.cyanAccent.withAlpha(26) 
+            ? const Color(0xFF81C784).withAlpha(30) 
             : Colors.white.withAlpha(15), // Glassmorphism container
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSelf 
-              ? Colors.cyanAccent.withAlpha(128) 
+              ? const Color(0xFF81C784).withAlpha(150) 
               : Colors.white.withAlpha(26),
           width: isSelf ? 1.5 : 1.0,
         ),
         boxShadow: isSelf ? [
           BoxShadow(
-            color: Colors.cyanAccent.withAlpha(26),
+            color: const Color(0xFF81C784).withAlpha(35),
             blurRadius: 8,
             spreadRadius: 1,
           )
@@ -255,7 +255,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelf ? Colors.cyanAccent : rankColor.withAlpha(128),
+                  color: isSelf ? const Color(0xFF81C784) : rankColor.withAlpha(128),
                   width: 1.5,
                 ),
               ),
@@ -280,7 +280,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: isSelf ? FontWeight.bold : FontWeight.w500,
-                  color: isSelf ? Colors.cyanAccent : Colors.white,
+                  color: isSelf ? const Color(0xFF81C784) : Colors.white,
                 ),
               ),
             ),
@@ -290,7 +290,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               style: GoogleFonts.outfit(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isSelf ? Colors.cyanAccent : Colors.white,
+                color: isSelf ? const Color(0xFF81C784) : Colors.white,
               ),
             ),
           ],
