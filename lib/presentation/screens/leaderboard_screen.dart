@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../data/datasources/local_storage.dart';
 import '../../data/datasources/firebase_service.dart';
+import '../../domain/models/game_theme.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -11,6 +13,8 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTickerProviderStateMixin {
   final FirebaseService _firebaseService = FirebaseService();
+  final LocalStorage _localStorage = LocalStorage();
+  GameTheme _currentTheme = GameTheme.allThemes.first;
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Future<List<Map<String, dynamic>>> _leaderboardFuture;
@@ -19,6 +23,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
   void initState() {
     super.initState();
     _leaderboardFuture = _firebaseService.getLeaderboard();
+    _loadTheme();
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -30,6 +35,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
     );
 
     _controller.forward();
+  }
+
+  Future<void> _loadTheme() async {
+    final themeId = await _localStorage.getSelectedThemeId();
+    final theme = GameTheme.allThemes.firstWhere(
+      (t) => t.id == themeId,
+      orElse: () => GameTheme.allThemes.first,
+    );
+    if (mounted) {
+      setState(() {
+        _currentTheme = theme;
+      });
+    }
   }
 
   @override
@@ -46,7 +64,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Ambient neon background glow
+          // Dynamic Theme Background Image (No longer plain black!)
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/${_currentTheme.backgroundImage}',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Dark Nature Overlay
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withAlpha(150), // 0.60 opacity for readability
+            ),
+          ),
+          // Ambient warm sun/forest glows
           Positioned(
             top: -100,
             left: -100,
@@ -57,7 +88,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF81C784).withAlpha(30),
+                    color: const Color(0xFF81C784).withAlpha(30), // soft forest green glow
                     blurRadius: 120,
                     spreadRadius: 60,
                   ),
@@ -75,7 +106,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD54F).withAlpha(20),
+                    color: const Color(0xFFFFD54F).withAlpha(20), // soft sunshine glow
                     blurRadius: 140,
                     spreadRadius: 70,
                   ),
@@ -125,10 +156,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                         future: _leaderboardFuture,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF81C784)),
-                              ),
+                            // Show beautiful nature-styled Shimmer loaders
+                            return ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: 8,
+                              itemBuilder: (context, index) => const ShimmerLoadingItem(),
                             );
                           }
 
@@ -296,6 +328,58 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Custom, nature-styled Shimmer Loader Widget
+class ShimmerLoadingItem extends StatefulWidget {
+  const ShimmerLoadingItem({super.key});
+
+  @override
+  State<ShimmerLoadingItem> createState() => _ShimmerLoadingItemState();
+}
+
+class _ShimmerLoadingItemState extends State<ShimmerLoadingItem> with SingleTickerProviderStateMixin {
+  late AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController.unbounded(vsync: this)
+      ..repeat(min: -0.5, max: 1.5, period: const Duration(milliseconds: 1200));
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          height: 64,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withAlpha(10), width: 1),
+            gradient: LinearGradient(
+              colors: const [
+                Color(0xFF161F16), // Dark forest shade
+                Color(0xFF2A362A), // Lighter moss green
+                Color(0xFF161F16), // Dark forest shade
+              ],
+              stops: const [0.1, 0.5, 0.9],
+              begin: Alignment(-1.0 + _shimmerController.value, -0.3),
+              end: Alignment(1.0 + _shimmerController.value, 0.3),
+            ),
+          ),
+        );
+      },
     );
   }
 }
