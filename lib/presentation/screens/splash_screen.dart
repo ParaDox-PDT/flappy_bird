@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF81C784).withAlpha(30), // soft forest green glow
+                    color: const Color(0xFF1E88E5).withAlpha(35), // soft blue glow
                     blurRadius: 100,
                     spreadRadius: 50,
                   ),
@@ -188,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             shadows: [
                               Shadow(
                                 blurRadius: 15.0,
-                                color: const Color(0xFF81C784).withAlpha(150), // forest green glow
+                                color: const Color(0xFF1E88E5).withAlpha(150), // blue glow
                                 offset: const Offset(0, 0),
                               ),
                               Shadow(
@@ -216,7 +216,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           width: 120,
                           child: LinearProgressIndicator(
                             backgroundColor: Colors.white12,
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF81C784)), // Sage Green
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF1E88E5)), // Premium Blue
                             minHeight: 3,
                             borderRadius: BorderRadius.circular(2),
                           ),

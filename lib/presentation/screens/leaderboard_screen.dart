@@ -88,7 +88,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF81C784).withAlpha(30), // soft forest green glow
+                    color: const Color(0xFF1E88E5).withAlpha(35), // soft blue glow
                     blurRadius: 120,
                     spreadRadius: 60,
                   ),
@@ -141,7 +141,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                             shadows: [
                               Shadow(
                                 blurRadius: 10,
-                                color: const Color(0xFF81C784).withAlpha(150),
+                                color: const Color(0xFF1E88E5).withAlpha(150),
                               ),
                             ],
                           ),
@@ -252,18 +252,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isSelf 
-            ? const Color(0xFF81C784).withAlpha(30) 
+            ? const Color(0xFF1E88E5).withAlpha(35) 
             : Colors.white.withAlpha(15), // Glassmorphism container
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSelf 
-              ? const Color(0xFF81C784).withAlpha(150) 
+              ? const Color(0xFF1E88E5).withAlpha(150) 
               : Colors.white.withAlpha(26),
           width: isSelf ? 1.5 : 1.0,
         ),
         boxShadow: isSelf ? [
           BoxShadow(
-            color: const Color(0xFF81C784).withAlpha(35),
+            color: const Color(0xFF1E88E5).withAlpha(35),
             blurRadius: 8,
             spreadRadius: 1,
           )
@@ -287,7 +287,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelf ? const Color(0xFF81C784) : rankColor.withAlpha(128),
+                  color: isSelf ? const Color(0xFF1E88E5) : rankColor.withAlpha(128),
                   width: 1.5,
                 ),
               ),
@@ -312,7 +312,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: isSelf ? FontWeight.bold : FontWeight.w500,
-                  color: isSelf ? const Color(0xFF81C784) : Colors.white,
+                  color: isSelf ? const Color(0xFF1E88E5) : Colors.white,
                 ),
               ),
             ),
@@ -322,7 +322,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               style: GoogleFonts.outfit(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isSelf ? const Color(0xFF81C784) : Colors.white,
+                color: isSelf ? const Color(0xFF1E88E5) : Colors.white,
               ),
             ),
           ],
@@ -369,9 +369,9 @@ class _ShimmerLoadingItemState extends State<ShimmerLoadingItem> with SingleTick
             border: Border.all(color: Colors.white.withAlpha(10), width: 1),
             gradient: LinearGradient(
               colors: const [
-                Color(0xFF161F16), // Dark forest shade
-                Color(0xFF2A362A), // Lighter moss green
-                Color(0xFF161F16), // Dark forest shade
+                Color(0xFF0F172A), // Dark slate/navy blue
+                Color(0xFF1E293B), // Lighter slate blue
+                Color(0xFF0F172A), // Dark slate/navy blue
               ],
               stops: const [0.1, 0.5, 0.9],
               begin: Alignment(-1.0 + _shimmerController.value, -0.3),

@@ -138,7 +138,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF81C784))),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF1E88E5))),
       );
     }
 
@@ -171,7 +171,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
               child: IconButton(
                 icon: Icon(
                   _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  color: _isMuted ? const Color(0xFFE57373) : const Color(0xFF81C784),
+                  color: _isMuted ? const Color(0xFFE57373) : const Color(0xFF42A5F5),
                   size: 24,
                 ),
                 onPressed: _toggleMute,
@@ -213,7 +213,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF81C784), width: 1.5),
+                          border: Border.all(color: const Color(0xFF42A5F5), width: 1.5),
                         ),
                         child: ClipOval(
                           child: _currentUser!.photoURL != null
@@ -249,7 +249,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         shadows: [
                           Shadow(
                             blurRadius: 15.0,
-                            color: const Color(0xFF81C784).withAlpha(150),
+                            color: const Color(0xFF1E88E5).withAlpha(150),
                             offset: const Offset(0, 0),
                           ),
                           Shadow(
@@ -295,7 +295,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         _loadData(); // Reload high score and theme on return
                       },
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF66BB6A), Color(0xFF2E7D32)],
+                        colors: [Color(0xFF1E88E5), Color(0xFF0D47A1)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -361,7 +361,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           boxShadow: isGlow && onTap != null
               ? [
                   BoxShadow(
-                    color: const Color(0xFF66BB6A).withAlpha(76),
+                    color: const Color(0xFF1E88E5).withAlpha(76),
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 6),
